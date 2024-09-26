@@ -1,0 +1,4 @@
+/.phplint.cache/
+/.phpunit.cache/
+/vendor/
+/composer.lock

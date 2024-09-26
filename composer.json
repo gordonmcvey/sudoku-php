@@ -1,0 +1,45 @@
+{
+  "name": "gordonmcvey/sudoku-php",
+  "description": "Sudoku solver and generator in PHP",
+  "minimum-stability": "stable",
+  "license": "apache-2.0",
+  "authors": [
+    {
+      "name": "gordonmcvey",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.3.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.3",
+    "squizlabs/php_codesniffer": "^3.10",
+    "phpstan/phpstan": "^1.12",
+    "overtrue/phplint": "^9.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "gordonmcvey\\sudoku\\": "src/gordonmcvey/sudoku"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "gordonmcvey\\sudoku\\test\\": "tests/gordonmcvey/sudoku/test"
+    }
+  },
+  "scripts": {
+    "unittest": "vendor/bin/phpunit ./tests/gordonmcvey/sudoku/test/unit",
+    "integrationtest": "vendor/bin/phpunit ./tests/gordonmcvey/sudoku/test/integration",
+    "test": "vendor/bin/phpunit",
+    "phpcs": "vendor/bin/phpcs",
+    "lint": "vendor/bin/phplint -c ./phplint.yaml.dist",
+    "static": "vendor/bin/phpstan",
+    "all": [
+      "@test",
+      "@phpcs",
+      "@lint",
+      "@static"
+    ]
+  }
+}
