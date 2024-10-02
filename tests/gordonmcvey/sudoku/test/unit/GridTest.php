@@ -6,7 +6,10 @@ namespace gordonmcvey\sudoku\test\unit;
 
 use gordonmcvey\sudoku\exception\CellValueRangeException;
 use gordonmcvey\sudoku\exception\ImmutableCellException;
+use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
+use gordonmcvey\sudoku\exception\InvalidGridInsertionUniqueConstraintException;
+use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
 use gordonmcvey\sudoku\Grid;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -401,6 +404,92 @@ class GridTest extends TestCase
     }
 
     /**
+     * @param array<int, array<int, mixed>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueRows")]
+    public function constructorWithPuzzleWithNonUniqueRows(array $grid): void
+    {
+        $this->expectException(InvalidRowUniqueConstraintException::class);
+        new Grid(puzzle: $grid);
+    }
+
+    /**
+     * @param array<int, array<int, mixed>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueRows")]
+    public function constructorWithSolutionWithNonUniqueRows(array $grid): void
+    {
+        $this->expectException(InvalidRowUniqueConstraintException::class);
+        new Grid(solution: $grid);
+    }
+
+    /**
+     * @return array<string, array{
+     *     grid: array<int, array<int, int>>
+     * }>
+     * @todo Add more test cases
+     */
+    public static function provideGridsWithNonUniqueRows(): array
+    {
+        return [
+            "Non-unique row case 1" => [
+                "grid" => [
+                    0 => [0 => 1, 1 => 2, 2 => 3, 3 => 4, 4 => 5, 5 => 6, 6 => 6, 7 => 7, 8 => 7]
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueColumns")]
+    public function constructorWithPuzzleWithNonUniqueColumns(array $grid): void
+    {
+        $this->expectException(InvalidColumnUniqueConstraintException::class);
+        new Grid(puzzle: $grid);
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueColumns")]
+    public function constructorWithSolutionWithNonUniqueColumns(array $grid): void
+    {
+        $this->expectException(InvalidColumnUniqueConstraintException::class);
+        new Grid(solution: $grid);
+    }
+
+    /**
+     * @return array<string, array{
+     *     grid: array<int, array<int, int>>
+     * }>
+     * @todo Add more test cases
+     */
+    public static function provideGridsWithNonUniqueColumns(): array
+    {
+        return [
+            "Non-unique column case 1" => [
+                "grid" => [
+                    0 => [0 => 1],
+                    1 => [0 => 2],
+                    2 => [0 => 3],
+                    3 => [0 => 4],
+                    4 => [0 => 5],
+                    5 => [0 => 6],
+                    6 => [0 => 6],
+                    7 => [0 => 7],
+                    8 => [0 => 7],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @return array<string, array{
      *     puzzle: array<int, array<int, int>>,
      *     solution: array<int, array<int, int>>
@@ -531,23 +620,23 @@ class GridTest extends TestCase
                 ],
                 "solution"    => [
                     0 => [1 => 7, 3 => 6, 5 => 9, 7 => 8],
-                    1 => [0 => 3, 2 => 4, 4 => 2, 6 => 1, 8 => 3],
+                    1 => [0 => 3, 2 => 5, 4 => 4, 6 => 1, 8 => 2],
                 ],
                 "expectation" => [
                     0 => [0 => 1, 1 => 7, 2 => 2, 3 => 6, 4 => 3, 5 => 9, 6 => 4, 7 => 8, 8 => 5],
-                    1 => [0 => 3, 1 => 6, 2 => 4, 3 => 7, 4 => 2, 5 => 8, 6 => 1, 7 => 9, 8 => 3],
+                    1 => [0 => 3, 1 => 6, 2 => 5, 3 => 7, 4 => 4, 5 => 8, 6 => 1, 7 => 9, 8 => 2],
                 ],
             ],
             "Puzzle with no row overlap in solution" => [
                 "puzzle"      => [
-                    1 => [0 => 3, 1 => 6, 2 => 4, 3 => 7, 4 => 2, 5 => 8, 6 => 1, 7 => 9, 8 => 3],
+                    1 => [0 => 3, 1 => 6, 2 => 5, 3 => 7, 4 => 4, 5 => 8, 6 => 1, 7 => 9, 8 => 2],
                 ],
                 "solution"    => [
                     0 => [0 => 1, 1 => 7, 2 => 2, 3 => 6, 4 => 3, 5 => 9, 6 => 4, 7 => 8, 8 => 5],
                 ],
                 "expectation" => [
                     0 => [0 => 1, 1 => 7, 2 => 2, 3 => 6, 4 => 3, 5 => 9, 6 => 4, 7 => 8, 8 => 5],
-                    1 => [0 => 3, 1 => 6, 2 => 4, 3 => 7, 4 => 2, 5 => 8, 6 => 1, 7 => 9, 8 => 3],
+                    1 => [0 => 3, 1 => 6, 2 => 5, 3 => 7, 4 => 4, 5 => 8, 6 => 1, 7 => 9, 8 => 2],
                 ],
             ],
         ];
@@ -711,17 +800,17 @@ class GridTest extends TestCase
                     ["row" => 0, "column" => 8, "value" => 5],
                     ["row" => 1, "column" => 0, "value" => 3],
                     ["row" => 1, "column" => 1, "value" => 6],
-                    ["row" => 1, "column" => 2, "value" => 4],
+                    ["row" => 1, "column" => 2, "value" => 5],
                     ["row" => 1, "column" => 3, "value" => 7],
-                    ["row" => 1, "column" => 4, "value" => 2],
+                    ["row" => 1, "column" => 4, "value" => 4],
                     ["row" => 1, "column" => 5, "value" => 8],
                     ["row" => 1, "column" => 6, "value" => 1],
                     ["row" => 1, "column" => 7, "value" => 9],
-                    ["row" => 1, "column" => 8, "value" => 3],
+                    ["row" => 1, "column" => 8, "value" => 2],
                 ],
                 "expectation" => [
                     0 => [0 => 1, 1 => 7, 2 => 2, 3 => 6, 4 => 3, 5 => 9, 6 => 4, 7 => 8, 8 => 5],
-                    1 => [0 => 3, 1 => 6, 2 => 4, 3 => 7, 4 => 2, 5 => 8, 6 => 1, 7 => 9, 8 => 3],
+                    1 => [0 => 3, 1 => 6, 2 => 5, 3 => 7, 4 => 4, 5 => 8, 6 => 1, 7 => 9, 8 => 2],
                 ],
             ],
             "Shuffled entries" => [
@@ -737,17 +826,17 @@ class GridTest extends TestCase
                     ["row" => 0, "column" => 8, "value" => 5],
                     ["row" => 1, "column" => 0, "value" => 3],
                     ["row" => 1, "column" => 1, "value" => 6],
-                    ["row" => 1, "column" => 2, "value" => 4],
+                    ["row" => 1, "column" => 2, "value" => 5],
                     ["row" => 1, "column" => 3, "value" => 7],
-                    ["row" => 1, "column" => 4, "value" => 2],
+                    ["row" => 1, "column" => 4, "value" => 4],
                     ["row" => 1, "column" => 5, "value" => 8],
                     ["row" => 1, "column" => 6, "value" => 1],
                     ["row" => 1, "column" => 7, "value" => 9],
-                    ["row" => 1, "column" => 8, "value" => 3],
+                    ["row" => 1, "column" => 8, "value" => 2],
                 ]),
                 "expectation" => [
                     0 => [0 => 1, 1 => 7, 2 => 2, 3 => 6, 4 => 3, 5 => 9, 6 => 4, 7 => 8, 8 => 5],
-                    1 => [0 => 3, 1 => 6, 2 => 4, 3 => 7, 4 => 2, 5 => 8, 6 => 1, 7 => 9, 8 => 3],
+                    1 => [0 => 3, 1 => 6, 2 => 5, 3 => 7, 4 => 4, 5 => 8, 6 => 1, 7 => 9, 8 => 2],
                 ],
             ],
         ];
@@ -761,6 +850,53 @@ class GridTest extends TestCase
 
         $this->expectException(ImmutableCellException::class);
         $grid->fillCoordinates(0, 0, 4);
+    }
+
+    /**
+     * @param array<array-key, array{
+     *     row: int,
+     *     column: int,
+     *     value: int
+     * }> $entries
+     */
+    #[Test]
+    #[DataProvider("provideForFillCoordinatesViolatesUniqueConstraints")]
+    public function fillCoordinatesViolatesUniqueConstraints(array $entries): void
+    {
+        $grid = new Grid();
+
+        $this->expectException(InvalidGridInsertionUniqueConstraintException::class);
+        foreach ($entries as $entry) {
+            $grid->fillCoordinates($entry["row"], $entry["column"], $entry["value"]);
+        }
+    }
+
+    /**
+     * @return array<string, array{
+     *     entries: array<array-key, array{
+     *         row: int,
+     *         column: int,
+     *         value: int
+     *     }>
+     * }>
+     * @todo Implement test case for subgrid constraint check
+     */
+    public static function provideForFillCoordinatesViolatesUniqueConstraints(): array
+    {
+        return [
+            "Violates row constraint" => [
+                "entries" => [
+                    ["row" => 0, "column" => 0, "value" => 1],
+                    ["row" => 0, "column" => 1, "value" => 1],
+                ],
+            ],
+            "Violates column constraint" => [
+                "entries" => [
+                    ["row" => 0, "column" => 0, "value" => 1],
+                    ["row" => 1, "column" => 0, "value" => 1],
+                ],
+            ]
+        ];
     }
 
     /**

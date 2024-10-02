@@ -6,7 +6,10 @@ namespace gordonmcvey\sudoku;
 
 use gordonmcvey\sudoku\exception\CellValueRangeException;
 use gordonmcvey\sudoku\exception\ImmutableCellException;
+use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
+use gordonmcvey\sudoku\exception\InvalidGridInsertionUniqueConstraintException;
+use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
 use JsonSerializable;
 use TypeError;
 
@@ -113,6 +116,7 @@ class Grid implements JsonSerializable
         $this->assertRowIdIsInRange($row);
         $this->assertColumnIdIsInRange($column);
         $this->assertCellIsMutable($row, $column);
+        $this->assertCellValueWillNotViolateUniqueConstraints($row, $column, $value);
 
         $this->solution[$row][$column] = $value;
         ksort($this->solution[$row]);
@@ -159,6 +163,8 @@ class Grid implements JsonSerializable
                 $this->assertCellValueInRange($cellValue);
             }
         }
+        $this->assertUniqueRows($grid);
+        $this->assertUniqueColumns($grid);
     }
 
     /**
@@ -256,21 +262,63 @@ class Grid implements JsonSerializable
     }
 
     /**
+     * @param array<int, array<int, int>> $grid
+     * @throws InvalidRowUniqueConstraintException
+     */
+    private function assertUniqueRows(array $grid): void
+    {
+        foreach ($grid as $row) {
+            $this->assertUniqueRow($row);
+        }
+    }
+
+    /**
      * Validate that the specified row contains unique values
      *
-     * @todo Implement
+     * @param array<int, int> $row
+     * @throws InvalidRowUniqueConstraintException
      */
-    private function assertUniqueRow(int $rowId): void
+    private function assertUniqueRow(array $row): void
     {
+        if (!$this->groupIsUnique($row)) {
+            throw new InvalidRowUniqueConstraintException();
+        }
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     * @throws InvalidColumnUniqueConstraintException
+     */
+    private function assertUniqueColumns(array $grid): void
+    {
+        for ($columnId = 0; $columnId < self::TOTAL_COLUMNS; $columnId++) {
+            $this->assertUniqueColumn(array_column($grid, $columnId));
+        }
     }
 
     /**
      * Validate that the specified column contains unique values
      *
-     * @todo Implement
+     * @param array<int, int> $column
+     * @throws InvalidColumnUniqueConstraintException
      */
-    private function assertUniqueColumn(int $columnId): void
+    private function assertUniqueColumn(array $column): void
     {
+        if (!$this->groupIsUnique($column)) {
+            throw new InvalidColumnUniqueConstraintException();
+        }
+    }
+
+    /**
+     * @throws InvalidGridInsertionUniqueConstraintException
+     */
+    private function assertCellValueWillNotViolateUniqueConstraints(int $row, int $column, int $value): void
+    {
+        $grid = $this->puzzleWithSolution();
+        $filledValues = array_unique(array_merge($grid[$row] ?? [], array_column($grid, $column)));
+        if (in_array($value, $filledValues, true)) {
+            throw new InvalidGridInsertionUniqueConstraintException();
+        }
     }
 
     /**
@@ -278,7 +326,24 @@ class Grid implements JsonSerializable
      *
      * @todo Implement
      */
-    private function assertUniqueSubgrid(): void
+    private function assertUniqueSubgrid(array $grid, array $subgrid): void
     {
+    }
+
+    /**
+     * @param array<int, int> $group
+     */
+    private function groupIsUnique(array $group): bool
+    {
+        $found = [];
+
+        foreach ($group as $value) {
+            if (isset($found[$value])) {
+                return false;
+            }
+            $found[$value] = true;
+        }
+
+        return true;
     }
 }
