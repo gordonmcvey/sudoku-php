@@ -324,9 +324,10 @@ class Grid implements JsonSerializable
     /**
      * Validate that the specified subgrid contains unique values
      *
+     * @param array<int, array<int, int>> $subGrid
      * @todo Implement
      */
-    private function assertUniqueSubgrid(array $grid, array $subgrid): void
+    private function assertUniqueSubgrid(array $subGrid): void
     {
     }
 
