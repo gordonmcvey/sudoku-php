@@ -10,6 +10,7 @@ use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
 use gordonmcvey\sudoku\exception\InvalidGridInsertionUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
+use gordonmcvey\sudoku\exception\InvalidSubGridUniqueConstraintException;
 use JsonSerializable;
 use TypeError;
 
@@ -37,8 +38,9 @@ class Grid implements JsonSerializable
      * @throws TypeError If any grid keys or values are invalid types
      */
     public function __construct(
-        private readonly array $puzzle = [],
-        private array          $solution = [],
+        private readonly array         $puzzle = [],
+        private array                  $solution = [],
+        private readonly SubGridHelper $subGridHelper = new SubGridHelper(),
     ) {
         $this->assertGrid($puzzle);
         $this->assertGrid($solution);
@@ -165,6 +167,7 @@ class Grid implements JsonSerializable
         }
         $this->assertUniqueRows($grid);
         $this->assertUniqueColumns($grid);
+        $this->assertUniqueSubGrids($grid);
     }
 
     /**
@@ -315,20 +318,55 @@ class Grid implements JsonSerializable
     private function assertCellValueWillNotViolateUniqueConstraints(int $row, int $column, int $value): void
     {
         $grid = $this->puzzleWithSolution();
-        $filledValues = array_unique(array_merge($grid[$row] ?? [], array_column($grid, $column)));
+        $filledValues = array_unique(array_merge(
+            $grid[$row] ?? [],
+            array_column($grid, $column),
+            $this->subGridValues($grid, $this->subGridHelper->coordinatesToSubgridId($row, $column)),
+        ));
         if (in_array($value, $filledValues, true)) {
             throw new InvalidGridInsertionUniqueConstraintException();
         }
     }
 
     /**
+     * @param array<int, array<int, int>> $grid
+     */
+    private function assertUniqueSubGrids(array $grid): void
+    {
+        foreach (SubGridHelper::SUBGRID_IDS as $subGridId) {
+            $subGrid = $this->subGridValues($grid, $subGridId);
+            $this->assertUniqueSubGrid($subGrid);
+        }
+    }
+
+    /**
      * Validate that the specified subgrid contains unique values
      *
-     * @param array<int, array<int, int>> $subGrid
-     * @todo Implement
+     * @param array<int, int> $subGrid
      */
-    private function assertUniqueSubgrid(array $subGrid): void
+    private function assertUniqueSubGrid(array $subGrid): void
     {
+        if (!$this->groupIsUnique($subGrid)) {
+            throw new InvalidSubGridUniqueConstraintException();
+        }
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     * @return array<int>
+     */
+    private function subGridValues(array $grid, int $subGridId): array
+    {
+        $subGridKeys = $this->subGridHelper->cellIdsForSubGrid($subGridId);
+        $subGrid = [];
+
+        foreach ($subGridKeys as $rowId => $columnIds) {
+            foreach ($columnIds as $columnId) {
+                !isset($grid[$rowId][$columnId]) || $subGrid[] = $grid[$rowId][$columnId];
+            }
+        }
+
+        return array_filter($subGrid);
     }
 
     /**

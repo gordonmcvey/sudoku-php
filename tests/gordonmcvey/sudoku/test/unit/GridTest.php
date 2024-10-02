@@ -10,6 +10,7 @@ use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
 use gordonmcvey\sudoku\exception\InvalidGridInsertionUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
+use gordonmcvey\sudoku\exception\InvalidSubGridUniqueConstraintException;
 use gordonmcvey\sudoku\Grid;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -490,6 +491,47 @@ class GridTest extends TestCase
     }
 
     /**
+     * @param array<int, array<int, int>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueSubGrids")]
+    public function constructorWithPuzzleWithNonUniqueSubGrids(array $grid): void
+    {
+        $this->expectException(InvalidSubGridUniqueConstraintException::class);
+        new Grid(puzzle: $grid);
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     */
+    #[Test]
+    #[DataProvider("provideGridsWithNonUniqueSubGrids")]
+    public function constructorWithSolutionWithNonUniqueSubGrids(array $grid): void
+    {
+        $this->expectException(InvalidSubGridUniqueConstraintException::class);
+        new Grid(solution: $grid);
+    }
+
+    /**
+     * @return array<string, array{
+     *     grid: array<int, array<int, int>>
+     * }>
+     * @todo Add more test cases
+     */
+    public static function provideGridsWithNonUniqueSubGrids(): array
+    {
+        return [
+            "Non-unique subgrid case 1" => [
+                "grid" => [
+                    0 => [0 => 1, 1 => 2, 2 => 3],
+                    1 => [0 => 2, 1 => 3, 2 => 4],
+                    2 => [0 => 3, 1 => 4, 2 => 5],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @return array<string, array{
      *     puzzle: array<int, array<int, int>>,
      *     solution: array<int, array<int, int>>
@@ -516,8 +558,8 @@ class GridTest extends TestCase
                         7 => 7
                     ],
                     1 => [
-                        3 => 1,
-                        5 => 3,
+                        3 => 4,
+                        5 => 6,
                     ],
                 ],
             ],
@@ -895,7 +937,13 @@ class GridTest extends TestCase
                     ["row" => 0, "column" => 0, "value" => 1],
                     ["row" => 1, "column" => 0, "value" => 1],
                 ],
-            ]
+            ],
+            "Violates subgrid constraint" => [
+                "entries" => [
+                    ["row" => 0, "column" => 0, "value" => 1],
+                    ["row" => 1, "column" => 1, "value" => 1],
+                ],
+            ],
         ];
     }
 
