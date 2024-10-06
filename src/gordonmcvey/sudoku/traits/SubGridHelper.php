@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
-namespace gordonmcvey\sudoku;
+namespace gordonmcvey\sudoku\traits;
 
-final class SubGridHelper
+use ValueError;
+
+trait SubGridHelper
 {
-    public const int TOP_LEFT = 0;
-    public const int TOP_CENTRE = 1;
-    public const int TOP_RIGHT = 2;
-    public const int CENTRE_LEFT = 3;
-    public const int CENTRE_CENTRE = 4;
-    public const int CENTRE_RIGHT = 5;
-    public const int BOTTOM_LEFT = 6;
-    public const int BOTTOM_CENTRE = 7;
-    public const int BOTTOM_RIGHT = 8;
+    private const int TOP_LEFT = 0;
+    private const int TOP_CENTRE = 1;
+    private const int TOP_RIGHT = 2;
+    private const int CENTRE_LEFT = 3;
+    private const int CENTRE_CENTRE = 4;
+    private const int CENTRE_RIGHT = 5;
+    private const int BOTTOM_LEFT = 6;
+    private const int BOTTOM_CENTRE = 7;
+    private const int BOTTOM_RIGHT = 8;
 
-    public const array SUBGRID_IDS = [
+    protected const array SUBGRID_IDS = [
         self::TOP_LEFT,
         self::TOP_CENTRE,
         self::TOP_RIGHT,
@@ -28,7 +30,7 @@ final class SubGridHelper
         self::BOTTOM_RIGHT,
     ];
 
-    public const array SUBGRID_CELLS = [
+    private const array SUBGRID_CELLS = [
         self::TOP_LEFT      => [
             0 => [0, 1, 2],
             1 => [0, 1, 2],
@@ -178,16 +180,16 @@ final class SubGridHelper
         ],
     ];
 
-    public function coordinatesToSubgridId(int $row, int $column): int
+    private function coordinatesToSubgridId(int $row, int $column): int
     {
-        return self::CELL_SUBGRID_MAP[$row][$column] ?? throw new \ValueError("Invalid coordinates: $row, $column");
+        return self::CELL_SUBGRID_MAP[$row][$column] ?? throw new ValueError("Invalid coordinates: $row, $column");
     }
 
     /**
      * @return array<int, array<int, int>>
      */
-    public function cellIdsForSubGrid(int $subGridId): array
+    private function cellIdsForSubGrid(int $subGridId): array
     {
-        return self::SUBGRID_CELLS[$subGridId] ?? throw new \ValueError("Invalid subgrid ID: $subGridId");
+        return self::SUBGRID_CELLS[$subGridId] ?? throw new ValueError("Invalid subgrid ID: $subGridId");
     }
 }
