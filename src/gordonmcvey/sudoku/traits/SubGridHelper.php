@@ -18,6 +18,7 @@ trait SubGridHelper
     private const int BOTTOM_CENTRE = 7;
     private const int BOTTOM_RIGHT = 8;
 
+    // Protected instead of private to stop PHPStan raising a bogus error on the mutable grid class
     protected const array SUBGRID_IDS = [
         self::TOP_LEFT,
         self::TOP_CENTRE,
