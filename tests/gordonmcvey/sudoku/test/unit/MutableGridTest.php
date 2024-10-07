@@ -162,4 +162,21 @@ class MutableGridTest extends TestCase
             ],
         ];
     }
+
+    #[Test]
+    public function fillCoordinatesDoesNotMutateForInvalidInput(): void
+    {
+        $expected = [0 => [0 => 1]];
+        $grid = new MutableGrid();
+
+        $grid->fillCoordinates(0, 0, 1);
+        $this->assertSame($expected, $grid->grid());
+
+        try {
+            $grid->fillCoordinates(1, 0, 1);
+        } catch (Throwable $e) {
+        }
+
+        $this->assertSame($expected, $grid->grid());
+    }
 }

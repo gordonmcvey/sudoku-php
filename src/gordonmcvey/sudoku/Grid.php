@@ -117,7 +117,7 @@ class Grid implements GridContract, JsonSerializable
     protected function assertUniqueRow(array $row): void
     {
         if (!$this->groupIsUnique($row)) {
-            throw new InvalidRowUniqueConstraintException();
+            throw new InvalidRowUniqueConstraintException("Invalid grid: duplicate values in row");
         }
     }
 
@@ -130,7 +130,7 @@ class Grid implements GridContract, JsonSerializable
     protected function assertUniqueColumn(array $column): void
     {
         if (!$this->groupIsUnique($column)) {
-            throw new InvalidColumnUniqueConstraintException();
+            throw new InvalidColumnUniqueConstraintException("Invalid grid: duplicate values in column");
         }
     }
 
@@ -142,7 +142,7 @@ class Grid implements GridContract, JsonSerializable
     protected function assertUniqueSubGrid(array $subGrid): void
     {
         if (!$this->groupIsUnique($subGrid)) {
-            throw new InvalidSubGridUniqueConstraintException();
+            throw new InvalidSubGridUniqueConstraintException("Invalid grid: duplicate values in subgrid");
         }
     }
 

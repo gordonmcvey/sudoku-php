@@ -17,7 +17,7 @@ class Game implements \JsonSerializable
 
     public function __construct(
         private readonly GridContract $puzzle,
-        private readonly GridContract&MutableGridContract $solution,
+        private readonly MutableGridContract $solution,
     ) {
         $this->assertSolutionDoesntOverlapPuzzle($puzzle->grid(), $solution->grid());
     }
@@ -56,8 +56,11 @@ class Game implements \JsonSerializable
 
     public function fillCoordinates(int $row, int $column, int $value): self
     {
+        // You can't insert any values into the solution that are already in the puzzle
         if ($this->puzzle->cellAtCoordinates($row, $column)) {
-            throw new ImmutableCellException("Cell at coordinates already exists.");
+            throw new ImmutableCellException(
+                "Cell at coordinates [$row, $column] is in the puzzle, cannot insert into the solution"
+            );
         }
 
         // @todo This approach works, but could be better
