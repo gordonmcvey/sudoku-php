@@ -77,15 +77,15 @@ class Game implements \JsonSerializable
 
     /**
      * @return array{
-     *     puzzle: GridContract,
-     *     solution: GridContract&MutableGridContract
+     *     puzzle: array<int, array<int, int>>,
+     *     solution: array<int, array<int, int>>
      * }
      */
     public function jsonSerialize(): array
     {
         return [
-            "puzzle"   => $this->puzzle,
-            "solution" => $this->solution,
+            "puzzle"   => $this->puzzle->grid(),
+            "solution" => $this->solution->grid(),
         ];
     }
 

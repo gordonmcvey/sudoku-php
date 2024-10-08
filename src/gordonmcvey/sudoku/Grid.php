@@ -230,7 +230,7 @@ class Grid implements GridContract, JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return $this->gridState;
+        return $this->grid();
     }
 
     /**

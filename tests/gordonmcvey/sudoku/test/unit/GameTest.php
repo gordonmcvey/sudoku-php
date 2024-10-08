@@ -468,6 +468,26 @@ class GameTest extends TestCase
      * @throws Exception
      */
     #[Test]
+    public function fillCoordinates(): void
+    {
+        $puzzle = [0 => [0 => 1, 1 => 2, 2 => 3]];
+        $puzzleGrid = $this->createMock(GridContract::class);
+        $solutionGrid = $this->createMock(MutableGridContract::class);
+
+        $puzzleGrid->method("grid")->willReturn($puzzle);
+        $puzzleGrid->method("cellAtCoordinates")->with(0, 3)->willReturn(null);
+
+        // Glass box test, the fillCoordinates will be called as the input meets the prerequisites
+        $solutionGrid->expects($this->once())->method("fillCoordinates");
+
+        $game = new Game($puzzleGrid, $solutionGrid);
+        $game->fillCoordinates(0, 3, 4);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
     public function fillCoordinatesAlreadyInPuzzle(): void
     {
         $puzzle = [0 => [0 => 1, 1 => 2, 2 => 3]];
@@ -532,5 +552,92 @@ class GameTest extends TestCase
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(InvalidSubGridUniqueConstraintException::class);
         $game->fillCoordinates(1, 1, 1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
+    public function fillCoordinatesDoesNotMutateForInvalidInput(): void
+    {
+        $puzzle = [0 => [0 => 1, 1 => 2, 2 => 3]];
+        $puzzleGrid = $this->createMock(GridContract::class);
+        $solutionGrid = $this->createMock(MutableGridContract::class);
+
+        $puzzleGrid->method("grid")->willReturn($puzzle);
+
+        // Glass box test, the fillCoordinates method on the mutable grid should never be called because it's found to
+        // violate unique row/column/subgrid constraints
+        $solutionGrid->expects($this->never())->method("fillCoordinates");
+
+        $game = new Game($puzzleGrid, $solutionGrid);
+        $this->expectException(InvalidRowUniqueConstraintException::class);
+        $game->fillCoordinates(0, 3, 1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
+    public function fillCoordinatesDoesNotMutateForOverlappingInput(): void
+    {
+        $puzzle = [0 => [0 => 1, 1 => 2, 2 => 3]];
+        $puzzleGrid = $this->createMock(GridContract::class);
+        $solutionGrid = $this->createMock(MutableGridContract::class);
+
+        $puzzleGrid->method("grid")->willReturn($puzzle);
+        $puzzleGrid->method("cellAtCoordinates")->with(0, 2)->willReturn($puzzle[0][2]);
+
+        // Glass box test, the fillCoordinates method on the mutable grid should never be called because the selected
+        // solution cell is already defined in the puzzle
+        $solutionGrid->expects($this->never())->method("fillCoordinates");
+
+        $game = new Game($puzzleGrid, $solutionGrid);
+        $this->expectException(ImmutableCellException::class);
+        $game->fillCoordinates(0, 2, 1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
+    public function jsonSerialize(): void
+    {
+        $puzzle = [
+            0 => [1 => 2, 2 => 3, 3 => 6, 4 => 7, 5 => 8, 6 => 9, 7 => 4, 8 => 5],
+            1 => [0 => 5, 2 => 4, 3 => 2, 4 => 3, 5 => 9, 6 => 7, 7 => 6, 8 => 1],
+            2 => [0 => 9, 1 => 6, 3 => 1, 4 => 4, 5 => 5, 6 => 3, 7 => 2, 8 => 8],
+            3 => [0 => 3, 1 => 7, 2 => 2, 4 => 6, 5 => 1, 6 => 5, 7 => 8, 8 => 9],
+            4 => [0 => 6, 1 => 9, 2 => 1, 3 => 5, 5 => 3, 6 => 2, 7 => 7, 8 => 4],
+            5 => [0 => 4, 1 => 5, 2 => 8, 3 => 7, 4 => 9, 6 => 6, 7 => 1, 8 => 3],
+            6 => [0 => 8, 1 => 3, 2 => 6, 3 => 9, 4 => 2, 5 => 4, 7 => 5, 8 => 7],
+            7 => [0 => 2, 1 => 1, 2 => 9, 3 => 8, 4 => 5, 5 => 7, 6 => 4, 8 => 6],
+            8 => [0 => 7, 1 => 4, 2 => 5, 3 => 3, 4 => 1, 5 => 6, 6 => 8, 7 => 9],
+        ];
+        $solution = [
+            0 => [0 => 1],
+            1 => [1 => 8],
+            2 => [2 => 7],
+            3 => [3 => 4],
+            4 => [4 => 8],
+            5 => [5 => 2],
+            6 => [6 => 1],
+            7 => [7 => 3],
+            8 => [8 => 2],
+        ];
+        $expected = json_encode([
+            "puzzle"   => $puzzle,
+            "solution" => $solution,
+        ]);
+
+        $puzzleGrid = $this->createMock(GridContract::class);
+        $solutionGrid = $this->createMock(MutableGridContract::class);
+
+        $puzzleGrid->method("grid")->willReturn($puzzle);
+        $solutionGrid->method("grid")->willReturn($solution);
+
+        $game = new Game($puzzleGrid, $solutionGrid);
+
+        $this->assertJsonStringEqualsJsonString($expected, json_encode($game));
     }
 }
