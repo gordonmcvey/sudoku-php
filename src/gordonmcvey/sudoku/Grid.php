@@ -25,9 +25,6 @@ class Grid implements GridContract, JsonSerializable
     private const int MIN_CELL_VALUE = 1;
     private const int MAX_CELL_VALUE = 9;
 
-    private const int TOTAL_ROWS = 9;
-    private const int TOTAL_COLUMNS = 9;
-
     private const int TOP_LEFT = 0;
     private const int TOP_CENTRE = 1;
     private const int TOP_RIGHT = 2;
@@ -217,12 +214,39 @@ class Grid implements GridContract, JsonSerializable
         return $this->gridState;
     }
 
+    public function row(int $rowId): array
+    {
+        $this->assertRowIdIsInRange($rowId);
+        return array_values($this->gridState[$rowId] ?? []);
+    }
+
+    public function column(int $columnId): array
+    {
+        $this->assertColumnIdIsInRange($columnId);
+        return array_column($this->gridState, $columnId);
+    }
+
+    public function subGridAtCoordinates(int $rowId, int $columnId): array
+    {
+        return $this->subGrid($this->coordinatesToSubgridId($rowId, $columnId));
+    }
+
+    public function subGrid(int $subGridId): array
+    {
+        return $this->subGridValues($this->gridState, $subGridId);
+    }
+
     public function cellAtCoordinates(int $row, int $column): ?int
     {
         $this->assertRowIdIsInRange($row);
         $this->assertColumnIdIsInRange($column);
 
         return $this->gridState[$row][$column] ?? null;
+    }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->gridState);
     }
 
     /**
@@ -334,9 +358,11 @@ class Grid implements GridContract, JsonSerializable
         return array_filter($subGrid);
     }
 
-    protected function coordinatesToSubgridId(int $row, int $column): int
+    protected function coordinatesToSubgridId(int $rowId, int $columnId): int
     {
-        return self::CELL_SUBGRID_MAP[$row][$column] ?? throw new ValueError("Invalid coordinates: $row, $column");
+        $this->assertRowIdIsInRange($rowId);
+        $this->assertColumnIdIsInRange($columnId);
+        return self::CELL_SUBGRID_MAP[$rowId][$columnId];
     }
 
     /**

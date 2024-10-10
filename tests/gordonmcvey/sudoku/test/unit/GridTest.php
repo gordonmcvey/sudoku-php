@@ -30,8 +30,7 @@ class GridTest extends TestCase
 
     /**
      * @return array<string, array{
-     *     puzzle: array<int, array<int, int>>,
-     *     solution: array<int, array<int, int>>
+     *     gridState: array<int, array<int, int>>,
      * }>
      */
     public static function provideForConstructor(): array
@@ -474,5 +473,254 @@ class GridTest extends TestCase
             $gridState,
             $grid->jsonSerialize(),
         );
+    }
+
+    /**
+     * @param array<int, array<int, int>> $gridState
+     * @param array<int> $expectation
+     */
+    #[Test]
+    #[DataProvider("provideRows")]
+    public function row(int $rowId, array $gridState, array $expectation): void
+    {
+        $grid = new Grid(gridState: $gridState);
+        $this->assertSame($expectation, $grid->row($rowId));
+    }
+
+    /**
+     * @return array<string, array{
+     *     rowId: int,
+     *     gridState: array<int, array<int, int>>,
+     *     expectation: array<int>
+     * }>
+     */
+    public static function provideRows(): array
+    {
+        return [
+            "Partial row 1" => [
+                "rowId"       => 0,
+                "gridState"   => [
+                    0 => [0 => 1, 1 => 2, 2 => 3, 3 => 6, 4 => 7],
+                ],
+                "expectation" => [1, 2, 3, 6, 7],
+            ],
+            "Partial row 2" => [
+                "rowId"       => 1,
+                "gridState"   => [
+                    1 => [5 => 9, 6 => 7, 7 => 6, 8 => 1],
+                ],
+                "expectation" => [9, 7, 6, 1],
+            ],
+            "Full row"      => [
+                "rowId"       => 2,
+                "gridState"   => [
+                    2 => [0 => 9, 1 => 6, 2 => 7, 3 => 1, 4 => 4, 5 => 5, 6 => 3, 7 => 2, 8 => 8],
+                ],
+                "expectation" => [9, 6, 7, 1, 4, 5, 3, 2, 8]
+            ],
+            "Empty row"     => [
+                "rowId"       => 3,
+                "gridState"   => [],
+                "expectation" => [],
+            ]
+        ];
+    }
+
+    /**
+     * @param array<int, array<int, int>> $gridState
+     * @param array<int> $expectation
+     */
+    #[Test]
+    #[DataProvider("provideColumns")]
+    public function column(int $columnId, array $gridState, array $expectation): void
+    {
+        $grid = new Grid(gridState: $gridState);
+        $this->assertSame($expectation, $grid->column($columnId));
+    }
+
+    /**
+     * @return array<string, array{
+     *     columnId: int,
+     *     gridState: array<int, array<int, int>>,
+     *     expectation: array<int>
+     * }>
+     */
+    public static function provideColumns(): array
+    {
+        return [
+            "Partial column 1" => [
+                "columnId"    => 0,
+                "gridState"   => [
+                    0 => [0 => 1],
+                    1 => [0 => 5],
+                    2 => [0 => 9],
+                    3 => [0 => 3],
+                    4 => [0 => 6],
+                ],
+                "expectation" => [1, 5, 9, 3, 6],
+            ],
+            "Partial column 2" => [
+                "columnId"    => 1,
+                "gridState"   => [
+                    5 => [1 => 5],
+                    6 => [1 => 3],
+                    7 => [1 => 1],
+                    8 => [1 => 4],
+                ],
+                "expectation" => [5, 3, 1, 4],
+            ],
+            "Full Column"      => [
+                "columnId"    => 2,
+                "gridState"   => [
+                    0 => [2 => 3],
+                    1 => [2 => 4],
+                    2 => [2 => 7],
+                    3 => [2 => 2],
+                    4 => [2 => 1],
+                    5 => [2 => 8],
+                    6 => [2 => 6],
+                    7 => [2 => 9],
+                    8 => [2 => 5],
+                ],
+                "expectation" => [3, 4, 7, 2, 1, 8, 6, 9, 5],
+            ],
+            "Empty column"     => [
+                "columnId"    => 3,
+                "gridState"   => [],
+                "expectation" => [],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<int, array<int, int>> $gridState
+     * @param array<int> $expectation
+     */
+    #[Test]
+    #[DataProvider("provideSubGrids")]
+    public function subGrid(int $subGridId, array $gridState, array $expectation): void
+    {
+        $grid = new Grid(gridState: $gridState);
+        $this->assertSame($expectation, $grid->subGrid($subGridId));
+    }
+
+    /**
+     * @return array<string, array{
+     *     subGridId: int,
+     *     gridState: array<int, array<int, int>>,
+     *     expectation: array<int>
+     * }>
+     */
+    public static function provideSubGrids(): array
+    {
+        return [
+            "Partial subgrid 1" => [
+                "subGridId"   => 0,
+                "gridState"   => [
+                    0 => [0 => 1, 1 => 2, 2 => 3],
+                ],
+                "expectation" => [1, 2, 3],
+            ],
+            "Partial subgrid 2" => [
+                "subGridId"   => 1,
+                "gridState"   => [
+                    0 => [3 => 6],
+                    1 => [3 => 2],
+                    2 => [3 => 1],
+                ],
+                "expectation" => [6, 2, 1],
+            ],
+            "Full subgrid"      => [
+                "subGridId"   => 2,
+                "gridState"   => [
+                    0 => [6 => 9, 7 => 4, 8 => 5],
+                    1 => [6 => 7, 7 => 6, 8 => 1],
+                    2 => [6 => 3, 7 => 2, 8 => 8],
+                ],
+                "expectation" => [9, 4, 5, 7, 6, 1, 3, 2, 8],
+            ],
+            "Empty subgrid"     => [
+                "subGridId"   => 3,
+                "gridState"   => [
+                ],
+                "expectation" => [],
+            ],
+        ];
+    }
+
+
+    /**
+     * @param array<int, array<int, int>> $gridState
+     * @param array<int> $expectation
+     */
+    #[Test]
+    #[DataProvider("provideSubGridsForCoordinates")]
+    public function subGridAtCoordinates(int $rowId, int $columnId, array $gridState, array $expectation): void
+    {
+        $grid = new Grid(gridState: $gridState);
+        $this->assertSame($expectation, $grid->subGridAtCoordinates($rowId, $columnId));
+    }
+
+    /**
+     * @return array<string, array{
+     *     rowId: int,
+     *     columnId: int,
+     *     gridState: array<int, array<int, int>>,
+     *     expectation: array<int>
+     * }>
+     */
+    public static function provideSubGridsForCoordinates(): array
+    {
+        return [
+            "Partial subgrid 1" => [
+                "rowId"       => 1,
+                "columnId"    => 1,
+                "gridState"   => [
+                    0 => [0 => 1, 1 => 2, 2 => 3],
+                ],
+                "expectation" => [1, 2, 3],
+            ],
+            "Partial subgrid 2" => [
+                "rowId"       => 1,
+                "columnId"    => 4,
+                "gridState"   => [
+                    0 => [3 => 6],
+                    1 => [3 => 2],
+                    2 => [3 => 1],
+                ],
+                "expectation" => [6, 2, 1],
+            ],
+            "Full subgrid"      => [
+                "rowId"       => 2,
+                "columnId"    => 7,
+                "gridState"   => [
+                    0 => [6 => 9, 7 => 4, 8 => 5],
+                    1 => [6 => 7, 7 => 6, 8 => 1],
+                    2 => [6 => 3, 7 => 2, 8 => 8],
+                ],
+                "expectation" => [9, 4, 5, 7, 6, 1, 3, 2, 8],
+            ],
+            "Empty subgrid"     => [
+                "rowId"       => 4,
+                "columnId"    => 1,
+                "gridState"   => [
+                ],
+                "expectation" => [],
+            ],
+        ];
+    }
+
+    #[Test]
+    public function isEmptyMethod(): void
+    {
+        $grid = new Grid();
+        $this->assertTrue($grid->isEmpty());
+    }
+
+    #[Test]
+    public function isNotEmptyMethod(): void
+    {
+        $grid = new Grid([0 => [0 => 1]]);
+        $this->assertFalse($grid->isEmpty());
     }
 }
