@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\interface;
 
+use gordonmcvey\sudoku\enum\SubGridIds;
+
 interface GridContract
 {
     public const int TOTAL_ROWS = 9;
@@ -34,7 +36,7 @@ interface GridContract
     /**
      * @return array<int>
      */
-    public function subGrid(int $subGridId): array;
+    public function subGrid(SubGridIds $subGridId): array;
 
     /**
      * Return the value of the cell specified by the given coordinates

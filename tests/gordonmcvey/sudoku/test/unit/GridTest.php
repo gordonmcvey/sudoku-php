@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit;
 
+use gordonmcvey\sudoku\enum\SubGridIds;
 use gordonmcvey\sudoku\exception\CellValueRangeException;
 use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
@@ -598,7 +599,7 @@ class GridTest extends TestCase
      */
     #[Test]
     #[DataProvider("provideSubGrids")]
-    public function subGrid(int $subGridId, array $gridState, array $expectation): void
+    public function subGrid(SubGridIds $subGridId, array $gridState, array $expectation): void
     {
         $grid = new Grid(gridState: $gridState);
         $this->assertSame($expectation, $grid->subGrid($subGridId));
@@ -606,7 +607,7 @@ class GridTest extends TestCase
 
     /**
      * @return array<string, array{
-     *     subGridId: int,
+     *     subGridId: SubGridIds,
      *     gridState: array<int, array<int, int>>,
      *     expectation: array<int>
      * }>
@@ -615,14 +616,14 @@ class GridTest extends TestCase
     {
         return [
             "Partial subgrid 1" => [
-                "subGridId"   => 0,
+                "subGridId"   => SubGridIds::TOP_LEFT,
                 "gridState"   => [
                     0 => [0 => 1, 1 => 2, 2 => 3],
                 ],
                 "expectation" => [1, 2, 3],
             ],
             "Partial subgrid 2" => [
-                "subGridId"   => 1,
+                "subGridId"   => SubGridIds::TOP_CENTRE,
                 "gridState"   => [
                     0 => [3 => 6],
                     1 => [3 => 2],
@@ -631,7 +632,7 @@ class GridTest extends TestCase
                 "expectation" => [6, 2, 1],
             ],
             "Full subgrid"      => [
-                "subGridId"   => 2,
+                "subGridId"   => SubGridIds::TOP_RIGHT,
                 "gridState"   => [
                     0 => [6 => 9, 7 => 4, 8 => 5],
                     1 => [6 => 7, 7 => 6, 8 => 1],
@@ -640,14 +641,13 @@ class GridTest extends TestCase
                 "expectation" => [9, 4, 5, 7, 6, 1, 3, 2, 8],
             ],
             "Empty subgrid"     => [
-                "subGridId"   => 3,
+                "subGridId"   => SubGridIds::CENTRE_LEFT,
                 "gridState"   => [
                 ],
                 "expectation" => [],
             ],
         ];
     }
-
 
     /**
      * @param array<int, array<int, int>> $gridState

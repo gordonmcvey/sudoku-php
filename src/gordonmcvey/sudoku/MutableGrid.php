@@ -9,6 +9,7 @@ use gordonmcvey\sudoku\exception\ImmutableCellException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\interface\MutableGridContract;
+use gordonmcvey\sudoku\util\SubGridMapper;
 use JsonSerializable;
 
 class MutableGrid extends Grid implements GridContract, MutableGridContract, JsonSerializable
@@ -32,7 +33,7 @@ class MutableGrid extends Grid implements GridContract, MutableGridContract, Jso
         $this->assertUniqueRow($grid[$row]);
         $this->assertUniqueColumn(array_column($grid, $column));
         $this->assertUniqueSubGrid(
-            $this->subGridValues($grid, $this->coordinatesToSubgridId($row, $column))
+            $this->subGridValues($grid, SubGridMapper::coordinatesToSubgridId($row, $column))
         );
 
         $this->gridState = $grid;
