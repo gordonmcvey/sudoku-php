@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\util;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
-use ValueError;
 
 /**
  * Mapper class for identifying subgrids in a Sudoku puzzle
@@ -179,9 +180,9 @@ class SubGridMapper
     {
     }
 
-    public static function coordinatesToSubGridId(int $row, int $column): SubGridIds
+    public static function coordinatesToSubGridId(RowIds $row, ColumnIds $column): SubGridIds
     {
-        return self::CELL_SUBGRID_MAP[$row][$column] ?? throw new ValueError("Invalid coordinates: $row, $column");
+        return self::CELL_SUBGRID_MAP[$row->value][$column->value];
     }
 
     /**

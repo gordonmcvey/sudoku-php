@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\solver;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\util\SubGridMapper;
 
@@ -45,10 +47,10 @@ class OptionFinder
 
         $gridOptions = [];
 
-        for ($rowId = 0; $rowId < $currentState::TOTAL_ROWS; $rowId++) {
+        foreach (RowIds::cases() as $rowId) {
             $allocatedOnRow = $currentState->row($rowId);
 
-            for ($columnId = 0; $columnId < $currentState::TOTAL_COLUMNS; $columnId++) {
+            foreach (ColumnIds::cases() as $columnId) {
                 if (null === $currentState->cellAtCoordinates($rowId, $columnId)) {
                     $cellOptions = array_values(array_diff(
                         self::ALL_OPTIONS,
@@ -57,7 +59,7 @@ class OptionFinder
                         $this->getSubGrid($currentState, $rowId, $columnId),
                     ));
 
-                    $gridOptions[$rowId][$columnId] = $cellOptions;
+                    $gridOptions[$rowId->value][$columnId->value] = $cellOptions;
                 }
             }
         }
@@ -68,17 +70,18 @@ class OptionFinder
     /**
      * @return array<int>
      */
-    private function getColumn(GridContract $grid, int $columnId): array
+    private function getColumn(GridContract $grid, ColumnIds $columnId): array
     {
-        isset($this->columnCache[$columnId]) || $this->columnCache[$columnId] = $grid->column($columnId);
+        $columnKey = $columnId->value;
+        isset($this->columnCache[$columnKey]) || $this->columnCache[$columnKey] = $grid->column($columnId);
 
-        return $this->columnCache[$columnId];
+        return $this->columnCache[$columnKey];
     }
 
     /**
      * @return array<int>
      */
-    private function getSubGrid(GridContract $grid, int $rowId, int $columnId): array
+    private function getSubGrid(GridContract $grid, RowIds $rowId, ColumnIds $columnId): array
     {
         $subGridId = SubGridMapper::coordinatesToSubGridId($rowId, $columnId);
         $subGridKey = $subGridId->value;

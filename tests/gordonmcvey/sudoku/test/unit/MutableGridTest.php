@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidSubGridUniqueConstraintException;
@@ -31,7 +33,7 @@ class MutableGridTest extends TestCase
         $grid = new MutableGrid();
 
         foreach ($entries as $entry) {
-            $grid->fillCoordinates($entry["row"], $entry["column"], $entry["value"]);
+            $grid->fillCoordinates(RowIds::from($entry["row"]), ColumnIds::from($entry["column"]), $entry["value"]);
         }
 
         $this->assertSame($expectation, $grid->grid());
@@ -121,7 +123,7 @@ class MutableGridTest extends TestCase
 
         $this->expectException($expectedException);
         foreach ($entries as $entry) {
-            $grid->fillCoordinates($entry["row"], $entry["column"], $entry["value"]);
+            $grid->fillCoordinates(RowIds::from($entry["row"]), ColumnIds::from($entry["column"]), $entry["value"]);
         }
     }
 
@@ -169,11 +171,11 @@ class MutableGridTest extends TestCase
         $expected = [0 => [0 => 1]];
         $grid = new MutableGrid();
 
-        $grid->fillCoordinates(0, 0, 1);
+        $grid->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_1, 1);
         $this->assertSame($expected, $grid->grid());
 
         try {
-            $grid->fillCoordinates(1, 0, 1);
+            $grid->fillCoordinates(RowIds::ROW_2, ColumnIds::COL_1, 1);
         } catch (Throwable $e) {
         }
 

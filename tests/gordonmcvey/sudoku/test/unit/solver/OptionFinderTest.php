@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit\solver;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\solver\OptionFinder;
 use gordonmcvey\sudoku\util\SubGridMapper;
@@ -245,19 +247,19 @@ class OptionFinderTest extends TestCase
         $grid->expects($this->once())->method("isEmpty")->willReturn(false);
 
         $grid->method("cellAtCoordinates")
-            ->willReturnCallback(fn (int $row, int $column): ?int => $gridState[$row][$column] ?? null);
+            ->willReturnCallback(fn (RowIds $row, ColumnIds $column): ?int => $gridState[$row->value][$column->value] ?? null);
 
         $grid->method("row")
-            ->willReturnCallback(fn (int $row): array => $gridState[$row] ?? []);
+            ->willReturnCallback(fn (RowIds $row): array => $gridState[$row->value] ?? []);
 
         $grid->method("column")
-            ->willReturnCallback(fn (int $column): array => array_column($gridState, $column));
+            ->willReturnCallback(fn (ColumnIds $column): array => array_column($gridState, $column->value));
 
         // This is a bit of a cheat because we're using the SubGridMapper to implement this method for the mock, but
         // if we didn't, we'd basically have to re-implement the same logic for the mock.  I feel that this is an
         // acceptable break from the normal rules of unit tests.
         $grid->method("subGridAtCoordinates")->willReturnCallback(
-            fn (int $row, int $column): array =>
+            fn (RowIds $row, ColumnIds $column): array =>
                 SubGridMapper::subGridValues($gridState, SubGridMapper::coordinatesToSubGridId($row, $column))
         );
 

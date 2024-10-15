@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit\util;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
 use gordonmcvey\sudoku\util\SubGridMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use ValueError;
 
 class SubGridMapperTest extends TestCase
 {
     #[Test]
     #[DataProvider("provideCoordinates")]
-    public function coordinatesToSubGridId(int $row, int $column, SubGridIds $expectation): void
+    public function coordinatesToSubGridId(RowIds $row, ColumnIds $column, SubGridIds $expectation): void
     {
         $this->assertSame($expectation, SubGridMapper::coordinatesToSubgridId($row, $column));
     }
 
     /**
      * @return array<string, array{
-     *     row: int,
-     *     column: int,
+     *     row: RowIds,
+     *     column: ColumnIds,
      *     expectation: SubGridIds
      * }
      */
@@ -31,85 +32,49 @@ class SubGridMapperTest extends TestCase
     {
         return [
             "Top left"      => [
-                "row"         => 1,
-                "column"      => 1,
+                "row"         => RowIds::ROW_2,
+                "column"      => ColumnIds::COL_2,
                 "expectation" => SubGridIds::TOP_LEFT,
             ],
             "Top centre"    => [
-                "row"         => 1,
-                "column"      => 4,
+                "row"         => RowIds::ROW_2,
+                "column"      => ColumnIds::COL_5,
                 "expectation" => SubGridIds::TOP_CENTRE,
             ],
             "Top right"     => [
-                "row"         => 1,
-                "column"      => 7,
+                "row"         => RowIds::ROW_2,
+                "column"      => ColumnIds::COL_8,
                 "expectation" => SubGridIds::TOP_RIGHT,
             ],
             "Centre left"   => [
-                "row"         => 4,
-                "column"      => 1,
+                "row"         => RowIds::ROW_5,
+                "column"      => ColumnIds::COL_2,
                 "expectation" => SubGridIds::CENTRE_LEFT,
             ],
             "Centre centre" => [
-                "row"         => 4,
-                "column"      => 4,
+                "row"         => RowIds::ROW_5,
+                "column"      => ColumnIds::COL_5,
                 "expectation" => SubGridIds::CENTRE_CENTRE,
             ],
             "Centre right"  => [
-                "row"         => 4,
-                "column"      => 7,
+                "row"         => RowIds::ROW_5,
+                "column"      => ColumnIds::COL_8,
                 "expectation" => SubGridIds::CENTRE_RIGHT,
             ],
             "Bottom left"   => [
-                "row"         => 7,
-                "column"      => 1,
+                "row"         => RowIds::ROW_8,
+                "column"      => ColumnIds::COL_2,
                 "expectation" => SubGridIds::BOTTOM_LEFT,
             ],
             "Bottom centre" => [
-                "row"         => 7,
-                "column"      => 4,
+                "row"         => RowIds::ROW_8,
+                "column"      => ColumnIds::COL_5,
                 "expectation" => SubGridIds::BOTTOM_CENTRE,
             ],
             "Bottom right"  => [
-                "row"         => 7,
-                "column"      => 7,
+                "row"         => RowIds::ROW_8,
+                "column"      => ColumnIds::COL_8,
                 "expectation" => SubGridIds::BOTTOM_RIGHT,
-            ],
-        ];
-    }
-
-    #[Test]
-    #[DataProvider("provideCoordinatesInvalid")]
-    public function coordinatesToSubGridIdInvalid(int $row, int $column): void
-    {
-        $this->expectException(ValueError::class);
-        SubGridMapper::coordinatesToSubgridId($row, $column);
-    }
-
-    /**
-     * @return array<string, array{
-     *     row: int,
-     *     column: int
-     * }
-     */
-    public static function provideCoordinatesInvalid(): array
-    {
-        return [
-            "Row below minimum"    => [
-                "row"         => -1,
-                "column"      => 1,
-            ],
-            "Row above maximum"    => [
-                "row"         => 9,
-                "column"      => 4,
-            ],
-            "Column below minimum" => [
-                "row"         => 1,
-                "column"      => -1,
-            ],
-            "Column above maximum" => [
-                "row"         => 4,
-                "column"      => 9,
             ],
         ];
     }

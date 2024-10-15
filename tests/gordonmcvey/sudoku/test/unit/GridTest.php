@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
 use gordonmcvey\sudoku\exception\CellValueRangeException;
 use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
@@ -367,7 +369,7 @@ class GridTest extends TestCase
         foreach ($expectations as $expectation) {
             $this->assertSame(
                 $expectation["value"],
-                $grid->cellAtCoordinates($expectation["row"], $expectation["column"]),
+                $grid->cellAtCoordinates(RowIds::from($expectation["row"]), ColumnIds::from($expectation["column"])),
             );
         }
     }
@@ -422,7 +424,7 @@ class GridTest extends TestCase
                     ["row" => 1, "column" => 0, "value" => null],
                 ],
             ],
-            "Last two rows" => [
+            "Last two rows"  => [
                 "gridState"   => [
                     7 => [
                         0 => 9,
@@ -482,7 +484,7 @@ class GridTest extends TestCase
      */
     #[Test]
     #[DataProvider("provideRows")]
-    public function row(int $rowId, array $gridState, array $expectation): void
+    public function row(RowIds $rowId, array $gridState, array $expectation): void
     {
         $grid = new Grid(gridState: $gridState);
         $this->assertSame($expectation, $grid->row($rowId));
@@ -490,7 +492,7 @@ class GridTest extends TestCase
 
     /**
      * @return array<string, array{
-     *     rowId: int,
+     *     rowId: RowIds,
      *     gridState: array<int, array<int, int>>,
      *     expectation: array<int>
      * }>
@@ -499,28 +501,28 @@ class GridTest extends TestCase
     {
         return [
             "Partial row 1" => [
-                "rowId"       => 0,
+                "rowId"       => RowIds::ROW_1,
                 "gridState"   => [
                     0 => [0 => 1, 1 => 2, 2 => 3, 3 => 6, 4 => 7],
                 ],
                 "expectation" => [1, 2, 3, 6, 7],
             ],
             "Partial row 2" => [
-                "rowId"       => 1,
+                "rowId"       => RowIds::ROW_2,
                 "gridState"   => [
                     1 => [5 => 9, 6 => 7, 7 => 6, 8 => 1],
                 ],
                 "expectation" => [9, 7, 6, 1],
             ],
             "Full row"      => [
-                "rowId"       => 2,
+                "rowId"       => RowIds::ROW_3,
                 "gridState"   => [
                     2 => [0 => 9, 1 => 6, 2 => 7, 3 => 1, 4 => 4, 5 => 5, 6 => 3, 7 => 2, 8 => 8],
                 ],
                 "expectation" => [9, 6, 7, 1, 4, 5, 3, 2, 8]
             ],
             "Empty row"     => [
-                "rowId"       => 3,
+                "rowId"       => RowIds::ROW_4,
                 "gridState"   => [],
                 "expectation" => [],
             ]
@@ -533,7 +535,7 @@ class GridTest extends TestCase
      */
     #[Test]
     #[DataProvider("provideColumns")]
-    public function column(int $columnId, array $gridState, array $expectation): void
+    public function column(ColumnIds $columnId, array $gridState, array $expectation): void
     {
         $grid = new Grid(gridState: $gridState);
         $this->assertSame($expectation, $grid->column($columnId));
@@ -541,7 +543,7 @@ class GridTest extends TestCase
 
     /**
      * @return array<string, array{
-     *     columnId: int,
+     *     columnId: ColumnIds,
      *     gridState: array<int, array<int, int>>,
      *     expectation: array<int>
      * }>
@@ -550,7 +552,7 @@ class GridTest extends TestCase
     {
         return [
             "Partial column 1" => [
-                "columnId"    => 0,
+                "columnId"    => ColumnIds::COL_1,
                 "gridState"   => [
                     0 => [0 => 1],
                     1 => [0 => 5],
@@ -561,7 +563,7 @@ class GridTest extends TestCase
                 "expectation" => [1, 5, 9, 3, 6],
             ],
             "Partial column 2" => [
-                "columnId"    => 1,
+                "columnId"    => ColumnIds::COL_2,
                 "gridState"   => [
                     5 => [1 => 5],
                     6 => [1 => 3],
@@ -571,7 +573,7 @@ class GridTest extends TestCase
                 "expectation" => [5, 3, 1, 4],
             ],
             "Full Column"      => [
-                "columnId"    => 2,
+                "columnId"    => ColumnIds::COL_3,
                 "gridState"   => [
                     0 => [2 => 3],
                     1 => [2 => 4],
@@ -586,7 +588,7 @@ class GridTest extends TestCase
                 "expectation" => [3, 4, 7, 2, 1, 8, 6, 9, 5],
             ],
             "Empty column"     => [
-                "columnId"    => 3,
+                "columnId"    => ColumnIds::COL_4,
                 "gridState"   => [],
                 "expectation" => [],
             ],
@@ -655,7 +657,7 @@ class GridTest extends TestCase
      */
     #[Test]
     #[DataProvider("provideSubGridsForCoordinates")]
-    public function subGridAtCoordinates(int $rowId, int $columnId, array $gridState, array $expectation): void
+    public function subGridAtCoordinates(RowIds $rowId, ColumnIds $columnId, array $gridState, array $expectation): void
     {
         $grid = new Grid(gridState: $gridState);
         $this->assertSame($expectation, $grid->subGridAtCoordinates($rowId, $columnId));
@@ -663,8 +665,8 @@ class GridTest extends TestCase
 
     /**
      * @return array<string, array{
-     *     rowId: int,
-     *     columnId: int,
+     *     rowId: RowIds,
+     *     columnId: ColumnIds,
      *     gridState: array<int, array<int, int>>,
      *     expectation: array<int>
      * }>
@@ -673,16 +675,16 @@ class GridTest extends TestCase
     {
         return [
             "Partial subgrid 1" => [
-                "rowId"       => 1,
-                "columnId"    => 1,
+                "rowId"       => RowIds::ROW_2,
+                "columnId"    => ColumnIds::COL_2,
                 "gridState"   => [
                     0 => [0 => 1, 1 => 2, 2 => 3],
                 ],
                 "expectation" => [1, 2, 3],
             ],
             "Partial subgrid 2" => [
-                "rowId"       => 1,
-                "columnId"    => 4,
+                "rowId"       => RowIds::ROW_2,
+                "columnId"    => ColumnIds::COL_5,
                 "gridState"   => [
                     0 => [3 => 6],
                     1 => [3 => 2],
@@ -691,8 +693,8 @@ class GridTest extends TestCase
                 "expectation" => [6, 2, 1],
             ],
             "Full subgrid"      => [
-                "rowId"       => 2,
-                "columnId"    => 7,
+                "rowId"       => RowIds::ROW_2,
+                "columnId"    => ColumnIds::COL_8,
                 "gridState"   => [
                     0 => [6 => 9, 7 => 4, 8 => 5],
                     1 => [6 => 7, 7 => 6, 8 => 1],
@@ -701,8 +703,8 @@ class GridTest extends TestCase
                 "expectation" => [9, 4, 5, 7, 6, 1, 3, 2, 8],
             ],
             "Empty subgrid"     => [
-                "rowId"       => 4,
-                "columnId"    => 1,
+                "rowId"       => RowIds::ROW_5,
+                "columnId"    => ColumnIds::COL_2,
                 "gridState"   => [
                 ],
                 "expectation" => [],

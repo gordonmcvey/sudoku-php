@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\interface;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
+
 interface MutableGridContract extends GridContract
 {
-    public function fillCoordinates(int $row, int $column, int $value): self;
+    public function fillCoordinates(RowIds $row, ColumnIds $column, int $value): self;
 }

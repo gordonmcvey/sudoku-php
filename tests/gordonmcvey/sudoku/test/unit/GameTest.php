@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\exception\ImmutableCellException;
 use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
 use gordonmcvey\sudoku\exception\InvalidRowUniqueConstraintException;
@@ -475,13 +477,13 @@ class GameTest extends TestCase
         $solutionGrid = $this->createMock(MutableGridContract::class);
 
         $puzzleGrid->method("grid")->willReturn($puzzle);
-        $puzzleGrid->method("cellAtCoordinates")->with(0, 3)->willReturn(null);
+        $puzzleGrid->method("cellAtCoordinates")->with(RowIds::ROW_1, ColumnIds::COL_4)->willReturn(null);
 
         // Glass box test, the fillCoordinates will be called as the input meets the prerequisites
         $solutionGrid->expects($this->once())->method("fillCoordinates");
 
         $game = new Game($puzzleGrid, $solutionGrid);
-        $game->fillCoordinates(0, 3, 4);
+        $game->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_4, 4);
     }
 
     /**
@@ -496,11 +498,11 @@ class GameTest extends TestCase
         $solutionGrid = $this->createMock(MutableGridContract::class);
 
         $puzzleGrid->method("grid")->willReturn($puzzle);
-        $puzzleGrid->method("cellAtCoordinates")->with(0, 0)->willReturn($puzzle[0][0]);
+        $puzzleGrid->method("cellAtCoordinates")->with(RowIds::ROW_1, ColumnIds::COL_1)->willReturn($puzzle[0][0]);
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(ImmutableCellException::class);
-        $game->fillCoordinates(0, 0, 4);
+        $game->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_1, 4);
     }
 
     /**
@@ -517,7 +519,7 @@ class GameTest extends TestCase
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(InvalidRowUniqueConstraintException::class);
-        $game->fillCoordinates(0, 4, 1);
+        $game->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_5, 1);
     }
 
     /**
@@ -534,7 +536,7 @@ class GameTest extends TestCase
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(InvalidColumnUniqueConstraintException::class);
-        $game->fillCoordinates(1, 0, 1);
+        $game->fillCoordinates(RowIds::ROW_2, ColumnIds::COL_1, 1);
     }
 
     /**
@@ -551,7 +553,7 @@ class GameTest extends TestCase
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(InvalidSubGridUniqueConstraintException::class);
-        $game->fillCoordinates(1, 1, 1);
+        $game->fillCoordinates(RowIds::ROW_2, ColumnIds::COL_2, 1);
     }
 
     /**
@@ -572,7 +574,7 @@ class GameTest extends TestCase
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(InvalidRowUniqueConstraintException::class);
-        $game->fillCoordinates(0, 3, 1);
+        $game->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_4, 1);
     }
 
     /**
@@ -586,7 +588,7 @@ class GameTest extends TestCase
         $solutionGrid = $this->createMock(MutableGridContract::class);
 
         $puzzleGrid->method("grid")->willReturn($puzzle);
-        $puzzleGrid->method("cellAtCoordinates")->with(0, 2)->willReturn($puzzle[0][2]);
+        $puzzleGrid->method("cellAtCoordinates")->with(RowIds::ROW_1, ColumnIds::COL_3)->willReturn($puzzle[0][2]);
 
         // Glass box test, the fillCoordinates method on the mutable grid should never be called because the selected
         // solution cell is already defined in the puzzle
@@ -594,7 +596,7 @@ class GameTest extends TestCase
 
         $game = new Game($puzzleGrid, $solutionGrid);
         $this->expectException(ImmutableCellException::class);
-        $game->fillCoordinates(0, 2, 1);
+        $game->fillCoordinates(RowIds::ROW_1, ColumnIds::COL_3, 1);
     }
 
     /**

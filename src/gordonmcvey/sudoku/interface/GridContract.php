@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\interface;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
 
 interface GridContract
@@ -21,17 +23,17 @@ interface GridContract
     /**
      * @return array<int, int>
      */
-    public function row(int $rowId): array;
+    public function row(RowIds $rowId): array;
 
     /**
      * @return array<int, int>
      */
-    public function column(int $columnId): array;
+    public function column(ColumnIds $columnId): array;
 
     /**
      * @return array<int>
      */
-    public function subGridAtCoordinates(int $rowId, int $columnId): array;
+    public function subGridAtCoordinates(RowIds $rowId, ColumnIds $columnId): array;
 
     /**
      * @return array<int>
@@ -41,7 +43,7 @@ interface GridContract
     /**
      * Return the value of the cell specified by the given coordinates
      */
-    public function cellAtCoordinates(int $row, int $column): ?int;
+    public function cellAtCoordinates(RowIds $row, ColumnIds $column): ?int;
 
     public function isEmpty(): bool;
 }

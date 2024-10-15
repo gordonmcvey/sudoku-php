@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
 use gordonmcvey\sudoku\exception\CellValueRangeException;
 use gordonmcvey\sudoku\exception\InvalidColumnUniqueConstraintException;
@@ -43,19 +45,17 @@ class Grid implements GridContract, JsonSerializable
         return $this->gridState;
     }
 
-    public function row(int $rowId): array
+    public function row(RowIds $rowId): array
     {
-        $this->assertRowIdIsInRange($rowId);
-        return array_values($this->gridState[$rowId] ?? []);
+        return array_values($this->gridState[$rowId->value] ?? []);
     }
 
-    public function column(int $columnId): array
+    public function column(ColumnIds $columnId): array
     {
-        $this->assertColumnIdIsInRange($columnId);
-        return array_column($this->gridState, $columnId);
+        return array_column($this->gridState, $columnId->value);
     }
 
-    public function subGridAtCoordinates(int $rowId, int $columnId): array
+    public function subGridAtCoordinates(RowIds $rowId, ColumnIds $columnId): array
     {
         return $this->subGrid(SubGridMapper::coordinatesToSubGridId($rowId, $columnId));
     }
@@ -65,12 +65,9 @@ class Grid implements GridContract, JsonSerializable
         return SubGridMapper::subGridValues($this->gridState, $subGridId);
     }
 
-    public function cellAtCoordinates(int $row, int $column): ?int
+    public function cellAtCoordinates(RowIds $row, ColumnIds $column): ?int
     {
-        $this->assertRowIdIsInRange($row);
-        $this->assertColumnIdIsInRange($column);
-
-        return $this->gridState[$row][$column] ?? null;
+        return $this->gridState[$row->value][$column->value] ?? null;
     }
 
     public function isEmpty(): bool
@@ -95,12 +92,10 @@ class Grid implements GridContract, JsonSerializable
     private function assertGrid(array $grid): void
     {
         foreach ($grid as $rowId => $row) {
-            $this->assertKeyType($rowId);
-            $this->assertRowIdIsInRange($rowId);
+            $this->assertRowId($rowId);
             foreach ($row as $columnId => $cellValue) {
-                $this->assertKeyType($columnId);
-                $this->assertValueType($cellValue);
-                $this->assertColumnIdIsInRange($columnId);
+                $this->assertColumnId($columnId);
+                $this->assertCellValueType($cellValue);
                 $this->assertCellValueInRange($cellValue);
             }
         }
@@ -112,9 +107,9 @@ class Grid implements GridContract, JsonSerializable
     /**
      * @throws InvalidGridCoordsException if the column is not in the allowed range
      */
-    protected function assertRowIdIsInRange(int $rowId): void
+    protected function assertRowId(int $rowId): void
     {
-        if ($rowId < 0 || $rowId > self::TOTAL_ROWS - 1) {
+        if (!RowIds::tryFrom($rowId)) {
             throw new InvalidGridCoordsException(sprintf(
                 "Row ID %d is outside of the valid grid range %d - %d",
                 $rowId,
@@ -127,9 +122,9 @@ class Grid implements GridContract, JsonSerializable
     /**
      * @throws InvalidGridCoordsException if the column is not in the allowed range
      */
-    protected function assertColumnIdIsInRange(int $columnId): void
+    protected function assertColumnId(int $columnId): void
     {
-        if ($columnId < 0 || $columnId > self::TOTAL_COLUMNS - 1) {
+        if (!ColumnIds::tryFrom($columnId)) {
             throw new InvalidGridCoordsException(sprintf(
                 "Column ID %d is outside of the valid grid range %d - %d",
                 $columnId,
@@ -155,19 +150,9 @@ class Grid implements GridContract, JsonSerializable
     }
 
     /**
-     * @throws TypeError if the key isn't an integer
-     */
-    private function assertKeyType(mixed $key): void
-    {
-        if (!is_int($key)) {
-            throw new TypeError("Grid references must be an integer");
-        }
-    }
-
-    /**
      * @throws TypeError if the value isn't an integer
      */
-    private function assertValueType(mixed $value): void
+    private function assertCellValueType(mixed $value): void
     {
         if (!is_int($value)) {
             throw new TypeError("Cell entries must be an integer");

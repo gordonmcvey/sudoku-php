@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku;
 
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\exception\ImmutableCellException;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\interface\MutableGridContract;
@@ -54,12 +56,15 @@ class Game implements \JsonSerializable
         return $puzzleWithSolution;
     }
 
-    public function fillCoordinates(int $row, int $column, int $value): self
+    public function fillCoordinates(RowIds $row, ColumnIds $column, int $value): self
     {
+        $rowKey = $row->value;
+        $columnKey = $column->value;
+
         // You can't insert any values into the solution that are already in the puzzle
         if ($this->puzzle->cellAtCoordinates($row, $column)) {
             throw new ImmutableCellException(
-                "Cell at coordinates [$row, $column] is in the puzzle, cannot insert into the solution"
+                "Cell at coordinates [$rowKey, $columnKey] is in the puzzle, cannot insert into the solution"
             );
         }
 
