@@ -62,7 +62,7 @@ class Grid implements GridContract, JsonSerializable
 
     public function subGrid(SubGridIds $subGridId): array
     {
-        return $this->subGridValues($this->gridState, $subGridId);
+        return SubGridMapper::subGridValues($this->gridState, $subGridId);
     }
 
     public function cellAtCoordinates(int $row, int $column): ?int
@@ -84,6 +84,29 @@ class Grid implements GridContract, JsonSerializable
     public function jsonSerialize(): array
     {
         return $this->grid();
+    }
+
+    /**
+     * @param array<int, array<int, int>> $grid
+     * @throws InvalidGridCoordsException if any grid coordinates are out of range
+     * @throws CellValueRangeException if any cell values are out of range
+     * @throws TypeError if any array keys or values aren't of the required type
+     */
+    private function assertGrid(array $grid): void
+    {
+        foreach ($grid as $rowId => $row) {
+            $this->assertKeyType($rowId);
+            $this->assertRowIdIsInRange($rowId);
+            foreach ($row as $columnId => $cellValue) {
+                $this->assertKeyType($columnId);
+                $this->assertValueType($cellValue);
+                $this->assertColumnIdIsInRange($columnId);
+                $this->assertCellValueInRange($cellValue);
+            }
+        }
+        $this->assertUniqueRows($grid);
+        $this->assertUniqueColumns($grid);
+        $this->assertUniqueSubGrids($grid);
     }
 
     /**
@@ -129,85 +152,6 @@ class Grid implements GridContract, JsonSerializable
                 self::MAX_CELL_VALUE,
             ));
         }
-    }
-
-    /**
-     * Validate that the specified row contains unique values
-     *
-     * @param array<int, int> $row
-     * @throws InvalidRowUniqueConstraintException
-     */
-    protected function assertUniqueRow(array $row): void
-    {
-        if (!$this->groupIsUnique($row)) {
-            throw new InvalidRowUniqueConstraintException("Invalid grid: duplicate values in row");
-        }
-    }
-
-    /**
-     * Validate that the specified column contains unique values
-     *
-     * @param array<int, int> $column
-     * @throws InvalidColumnUniqueConstraintException
-     */
-    protected function assertUniqueColumn(array $column): void
-    {
-        if (!$this->groupIsUnique($column)) {
-            throw new InvalidColumnUniqueConstraintException("Invalid grid: duplicate values in column");
-        }
-    }
-
-    /**
-     * Validate that the specified subgrid contains unique values
-     *
-     * @param array<int, int> $subGrid
-     */
-    protected function assertUniqueSubGrid(array $subGrid): void
-    {
-        if (!$this->groupIsUnique($subGrid)) {
-            throw new InvalidSubGridUniqueConstraintException("Invalid grid: duplicate values in subgrid");
-        }
-    }
-
-    /**
-     * @param array<int, array<int, int>> $grid
-     * @return array<int>
-     */
-    protected function subGridValues(array $grid, SubGridIds $subGridId): array
-    {
-        $subGridKeys = SubGridMapper::cellIdsForSubGrid($subGridId);
-        $subGrid = [];
-
-        foreach ($subGridKeys as $rowId => $columnIds) {
-            foreach ($columnIds as $columnId) {
-                !isset($grid[$rowId][$columnId]) || $subGrid[] = $grid[$rowId][$columnId];
-            }
-        }
-
-        return array_filter($subGrid);
-    }
-
-    /**
-     * @param array<int, array<int, int>> $grid
-     * @throws InvalidGridCoordsException if any grid coordinates are out of range
-     * @throws CellValueRangeException if any cell values are out of range
-     * @throws TypeError if any array keys or values aren't of the required type
-     */
-    private function assertGrid(array $grid): void
-    {
-        foreach ($grid as $rowId => $row) {
-            $this->assertKeyType($rowId);
-            $this->assertRowIdIsInRange($rowId);
-            foreach ($row as $columnId => $cellValue) {
-                $this->assertKeyType($columnId);
-                $this->assertValueType($cellValue);
-                $this->assertColumnIdIsInRange($columnId);
-                $this->assertCellValueInRange($cellValue);
-            }
-        }
-        $this->assertUniqueRows($grid);
-        $this->assertUniqueColumns($grid);
-        $this->assertUniqueSubGrids($grid);
     }
 
     /**
@@ -258,8 +202,46 @@ class Grid implements GridContract, JsonSerializable
     private function assertUniqueSubGrids(array $grid): void
     {
         foreach (SubGridIds::cases() as $subGridId) {
-            $subGrid = $this->subGridValues($grid, $subGridId);
+            $subGrid = SubGridMapper::subGridValues($grid, $subGridId);
             $this->assertUniqueSubGrid($subGrid);
+        }
+    }
+
+    /**
+     * Validate that the specified row contains unique values
+     *
+     * @param array<int, int> $row
+     * @throws InvalidRowUniqueConstraintException
+     */
+    protected function assertUniqueRow(array $row): void
+    {
+        if (!$this->groupIsUnique($row)) {
+            throw new InvalidRowUniqueConstraintException("Invalid grid: duplicate values in row");
+        }
+    }
+
+    /**
+     * Validate that the specified column contains unique values
+     *
+     * @param array<int, int> $column
+     * @throws InvalidColumnUniqueConstraintException
+     */
+    protected function assertUniqueColumn(array $column): void
+    {
+        if (!$this->groupIsUnique($column)) {
+            throw new InvalidColumnUniqueConstraintException("Invalid grid: duplicate values in column");
+        }
+    }
+
+    /**
+     * Validate that the specified subgrid contains unique values
+     *
+     * @param array<int, int> $subGrid
+     */
+    protected function assertUniqueSubGrid(array $subGrid): void
+    {
+        if (!$this->groupIsUnique($subGrid)) {
+            throw new InvalidSubGridUniqueConstraintException("Invalid grid: duplicate values in subgrid");
         }
     }
 

@@ -191,4 +191,22 @@ class SubGridMapper
     {
         return self::SUBGRID_CELLS[$subGridId->value];
     }
+
+    /**
+     * @param array<int, array<int, int>> $gridState
+     * @return array<int>
+     */
+    public static function subGridValues(array $gridState, SubGridIds $subGridId): array
+    {
+        $subGridKeys = self::cellIdsForSubGrid($subGridId);
+        $subGrid = [];
+
+        foreach ($subGridKeys as $rowId => $columnIds) {
+            foreach ($columnIds as $columnId) {
+                !isset($gridState[$rowId][$columnId]) || $subGrid[] = $gridState[$rowId][$columnId];
+            }
+        }
+
+        return array_filter($subGrid);
+    }
 }

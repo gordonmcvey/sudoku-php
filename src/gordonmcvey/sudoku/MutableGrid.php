@@ -33,7 +33,7 @@ class MutableGrid extends Grid implements GridContract, MutableGridContract, Jso
         $this->assertUniqueRow($grid[$row]);
         $this->assertUniqueColumn(array_column($grid, $column));
         $this->assertUniqueSubGrid(
-            $this->subGridValues($grid, SubGridMapper::coordinatesToSubgridId($row, $column))
+            SubGridMapper::subGridValues($grid, SubGridMapper::coordinatesToSubgridId($row, $column))
         );
 
         $this->gridState = $grid;
