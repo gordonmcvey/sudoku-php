@@ -29,38 +29,34 @@ class OptionFinder
      */
     private array $subGridCache = [];
 
+    public function __construct(private readonly GridContract $grid)
+    {
+    }
+
     /**
      * Find the possible options for the unfilled cells in the given grid
      *
      * For each cell in the given grid, the available options are 1 - 9, excluding any of those values that appear in
      * the same row, column, or subgrid.
      *
-     * @param GridContract $currentState
-     * @return array<int, array<int, array<int>>>
+     * The returned array only contains options for the unfilled cells.  If a cell is filled then it by definition has
+     * no optional values to fill for that cell.
+     *
+     * @return array<int, array<int, array<int>>> Options for each cell, keyed by row and column
      */
-    public function findOptionsFor(GridContract $currentState): array
+    public function findOptionsFor(): array
     {
         // Early out to skip unnecessary filtering when there's nothing to filter
-        if ($currentState->isEmpty()) {
+        if ($this->grid->isEmpty()) {
             return $this->emptyGridOptions();
         }
 
         $gridOptions = [];
 
         foreach (RowIds::cases() as $rowId) {
-            $allocatedOnRow = $currentState->row($rowId);
-
             foreach (ColumnIds::cases() as $columnId) {
-                if (null === $currentState->cellAtCoordinates($rowId, $columnId)) {
-                    $cellOptions = array_values(array_diff(
-                        self::ALL_OPTIONS,
-                        $allocatedOnRow,
-                        $this->getColumn($currentState, $columnId),
-                        $this->getSubGrid($currentState, $rowId, $columnId),
-                    ));
-
-                    $gridOptions[$rowId->value][$columnId->value] = $cellOptions;
-                }
+                $options = $this->findOptionsForCell($rowId, $columnId);
+                empty($options) || $gridOptions[$rowId->value][$columnId->value] = $options;
             }
         }
 
@@ -68,12 +64,30 @@ class OptionFinder
     }
 
     /**
+     * Find all the options that could be valid for the specified cell in the given grid
+     *
+     * @return array<int> List of possible options. Empty if the cell is filled or if there are no valid options
+     */
+    public function findOptionsForCell(RowIds $rowId, ColumnIds $columnId): array
+    {
+        $cellValue = $this->grid->cellAtCoordinates($rowId, $columnId);
+        return null === $cellValue ?
+            array_values(array_diff(
+                self::ALL_OPTIONS,
+                $this->grid->row($rowId),
+                $this->getColumn($columnId),
+                $this->getSubGrid($rowId, $columnId),
+            )) :
+            [];
+    }
+
+    /**
      * @return array<int>
      */
-    private function getColumn(GridContract $grid, ColumnIds $columnId): array
+    private function getColumn(ColumnIds $columnId): array
     {
         $columnKey = $columnId->value;
-        isset($this->columnCache[$columnKey]) || $this->columnCache[$columnKey] = $grid->column($columnId);
+        isset($this->columnCache[$columnKey]) || $this->columnCache[$columnKey] = $this->grid->column($columnId);
 
         return $this->columnCache[$columnKey];
     }
@@ -81,12 +95,12 @@ class OptionFinder
     /**
      * @return array<int>
      */
-    private function getSubGrid(GridContract $grid, RowIds $rowId, ColumnIds $columnId): array
+    private function getSubGrid(RowIds $rowId, ColumnIds $columnId): array
     {
         $subGridId = SubGridMapper::coordinatesToSubGridId($rowId, $columnId);
         $subGridKey = $subGridId->value;
 
-        isset($this->subGridCache[$subGridKey]) || $this->subGridCache[$subGridKey] = $grid->subGrid($subGridId);
+        isset($this->subGridCache[$subGridKey]) || $this->subGridCache[$subGridKey] = $this->grid->subGrid($subGridId);
 
         return $this->subGridCache[$subGridKey];
     }

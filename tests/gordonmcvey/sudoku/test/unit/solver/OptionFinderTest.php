@@ -27,8 +27,8 @@ class OptionFinderTest extends TestCase
     public function findOptionsFor(array $gridState, array $expectation): void
     {
         $grid = $this->mockGrid($gridState);
-        $finder = new OptionFinder();
-        $options = $finder->findOptionsFor($grid);
+        $finder = new OptionFinder($grid);
+        $options = $finder->findOptionsFor();
 
         $this->assertSame($expectation, $options);
     }
@@ -225,8 +225,8 @@ class OptionFinderTest extends TestCase
         $grid = $this->createMock(GridContract::class);
         $grid->expects($this->once())->method('isEmpty')->willReturn(true);
 
-        $finder = new OptionFinder();
-        $options = $finder->findOptionsFor($grid);
+        $finder = new OptionFinder($grid);
+        $options = $finder->findOptionsFor();
 
         $this->assertCount(9, $options);
         foreach ($options as $row) {
