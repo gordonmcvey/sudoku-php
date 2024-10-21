@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit\solver;
 
-use gordonmcvey\sudoku\enum\ColumnIds;
-use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\solver\OptionFinder;
-use gordonmcvey\sudoku\util\SubGridMapper;
+use gordonmcvey\sudoku\test\support\GridMocker;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\Exception as MockException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class OptionFinderTest extends TestCase
 {
+
     /**
      * @param array<int, array<int, int>> $gridState
      * @param array<int, array<int, array<int>>> $expectation
@@ -26,7 +24,7 @@ class OptionFinderTest extends TestCase
     #[DataProvider("provideGrids")]
     public function findOptionsFor(array $gridState, array $expectation): void
     {
-        $grid = $this->mockGrid($gridState);
+        $grid = GridMocker::configure($this->createMock(GridContract::class), $gridState);
         $finder = new OptionFinder($grid);
         $options = $finder->findOptionsFor();
 
@@ -235,34 +233,5 @@ class OptionFinderTest extends TestCase
                 $this->assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9], $option);
             }
         }
-    }
-
-    /**
-     * @param array<int, array<int, int>> $gridState
-     * @throws MockException
-     */
-    private function mockGrid(array $gridState): GridContract&MockObject
-    {
-        $grid = $this->createMock(GridContract::class);
-        $grid->expects($this->once())->method("isEmpty")->willReturn(false);
-
-        $grid->method("cellAtCoordinates")
-            ->willReturnCallback(fn (RowIds $row, ColumnIds $column): ?int => $gridState[$row->value][$column->value] ?? null);
-
-        $grid->method("row")
-            ->willReturnCallback(fn (RowIds $row): array => $gridState[$row->value] ?? []);
-
-        $grid->method("column")
-            ->willReturnCallback(fn (ColumnIds $column): array => array_column($gridState, $column->value));
-
-        // This is a bit of a cheat because we're using the SubGridMapper to implement this method for the mock, but
-        // if we didn't, we'd basically have to re-implement the same logic for the mock.  I feel that this is an
-        // acceptable break from the normal rules of unit tests.
-        $grid->method("subGridAtCoordinates")->willReturnCallback(
-            fn (RowIds $row, ColumnIds $column): array =>
-                SubGridMapper::subGridValues($gridState, SubGridMapper::coordinatesToSubGridId($row, $column))
-        );
-
-        return $grid;
     }
 }
