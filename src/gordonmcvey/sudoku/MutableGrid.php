@@ -11,10 +11,13 @@ use gordonmcvey\sudoku\exception\ImmutableCellException;
 use gordonmcvey\sudoku\exception\InvalidGridCoordsException;
 use gordonmcvey\sudoku\interface\MutableGridContract;
 use gordonmcvey\sudoku\util\SubGridMapper;
+use gordonmcvey\sudoku\util\UniqueGridValidator;
 use JsonSerializable;
 
 class MutableGrid extends Grid implements MutableGridContract, JsonSerializable
 {
+    use UniqueGridValidator;
+
     /**
      * @throws CellValueRangeException if the given value is not in the valid range
      * @throws InvalidGridCoordsException if the coordinates are not in the valid range
