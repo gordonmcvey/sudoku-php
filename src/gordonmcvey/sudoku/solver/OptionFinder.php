@@ -38,6 +38,7 @@ readonly class OptionFinder
             return $this->emptyGridOptions();
         }
 
+        $gridCache = $grid->grid();
         $columnCache = [];
         $subGridCache = [];
         $gridOptions = [];
@@ -53,10 +54,10 @@ readonly class OptionFinder
 
         foreach (RowIds::cases() as $rowId) {
             foreach (ColumnIds::cases() as $columnId) {
-                $options = null === $grid->cellAtCoordinates($rowId, $columnId) ?
+                $options = !isset($gridCache[$rowId->value][$columnId->value]) ?
                     array_values(array_diff(
                         self::ALL_OPTIONS,
-                        $grid->row($rowId),
+                        $gridCache[$rowId->value] ?? [],
                         $columnCache[$columnId->value],
                         $subGridCache[SubGridMapper::coordinatesToSubGridId($rowId, $columnId)->value],
                     )) :
