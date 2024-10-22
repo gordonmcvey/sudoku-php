@@ -6,10 +6,8 @@ namespace gordonmcvey\sudoku\solver;
 
 use gordonmcvey\sudoku\enum\ColumnIds;
 use gordonmcvey\sudoku\enum\RowIds;
-use gordonmcvey\sudoku\Grid;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\interface\MutableGridContract;
-use gordonmcvey\sudoku\util\SubGridMapper;
 
 /**
  * Depth-first implementation of the Solver interface
@@ -27,34 +25,17 @@ use gordonmcvey\sudoku\util\SubGridMapper;
  *
  * @link https://www.youtube.com/watch?v=eAFcj_2quWI The implementation is loosely based on the one demonstrated here
  */
-class DepthFirstSolver
+readonly class DepthFirstSolver
 {
-    /**
-     * @var array<int, array<int, int>>
-     */
-    private array $gridState;
-
-    public function __construct(private MutableGridContract $grid)
+    public function __construct(private MutableGridContract $grid, private OptionFinder $finder)
     {
     }
 
     public function solve(): ?GridContract
     {
-        $this->gridState = $this->grid->grid();
-
         return $this->findSolution() ?
-            $this->buildSolution() :
+            $this->grid :
             null;
-    }
-
-    private function buildSolution(): GridContract
-    {
-        ksort($this->gridState);
-        foreach ($this->gridState as &$row) {
-            ksort($row);
-        }
-
-        return new Grid($this->gridState);
     }
 
     private function findSolution(
@@ -70,31 +51,20 @@ class DepthFirstSolver
         } elseif (!$columnId) {
             // If we've exceeded the end of this row then move to the next one
             return $this->findSolution($rowKey + 1);
-        } elseif (isset($this->gridState[$rowKey][$columnKey])) {
+        } elseif (null !== $this->grid->cellAtCoordinates($rowId, $columnId)) {
             // If this cell already has a value, move on to the next one
             return $this->findSolution($rowKey, $columnKey + 1);
         } else {
             // Find a valid solution for this cell
-            // @todo Refactoring to allow the use of the OptionFinder
-            $options = array_values(array_diff(
-                [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                $this->gridState[$rowKey] ?? [],
-                array_column($this->gridState, $columnKey),
-                SubGridMapper::subGridValues(
-                    $this->gridState,
-                    SubGridMapper::coordinatesToSubGridId($rowId, $columnId)
-                ),
-            ));
-
-            foreach ($options as $option) {
+            foreach ($this->finder->findOptionsForCell($this->grid, $rowId, $columnId) as $option) {
                 // Try each possible value in this cell then attempt to solve the rest of the puzzle
-                $this->gridState[$rowKey][$columnKey] = $option;
+                $this->grid->fillCoordinates($rowId, $columnId, $option);
                 if ($this->findSolution($rowKey, $columnKey + 1)) {
                     return true;
                 } else {
                     // If the rest of the puzzle can't be solved with the current value in this cell, clear it so we can
                     // try the next option (if any)
-                    unset($this->gridState[$rowKey][$columnKey]);
+                    $this->grid->clearCoordinates($rowId, $columnId);
                 }
             }
 

@@ -5,28 +5,30 @@ declare(strict_types=1);
 namespace gordonmcvey\sudoku\test\unit\solver;
 
 use gordonmcvey\sudoku\interface\GridContract;
-use gordonmcvey\sudoku\interface\MutableGridContract;
+use gordonmcvey\sudoku\MutableGrid;
 use gordonmcvey\sudoku\solver\DepthFirstSolver;
-use gordonmcvey\sudoku\test\support\GridMocker;
+use gordonmcvey\sudoku\solver\OptionFinder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\MockObject\Exception as MockObjectException;
 use PHPUnit\Framework\TestCase;
 
 class DepthFirstSolverTest extends TestCase
 {
     /**
-     * @throws MockObjectException
+     * @param array<int, array<int, int>> $puzzle
+     * @param array<int, array<int, int>> $expectation
      * @link https://www.youtube.com/watch?v=eAFcj_2quWI
+     * @todo This is not really a unit test, re-implement it with suitable mocks
      */
     #[Test]
     #[DataProvider("provideSolvablePuzzles")]
     public function solve(array $puzzle, array $expectation): void
     {
-        $grid = $this->createMock(MutableGridContract::class);
-        $grid = GridMocker::configure($grid, $puzzle);
+//        $grid = $this->createMock(MutableGridContract::class);
+//        $grid = GridMocker::configure($grid, $puzzle);
 
-        $solver = new DepthFirstSolver(/*new OptionFinder($grid),*/ $grid);
+        $grid = new MutableGrid($puzzle);
+        $solver = new DepthFirstSolver($grid, new OptionFinder($grid));
 
         $solved = $solver->solve();
 
@@ -35,7 +37,10 @@ class DepthFirstSolverTest extends TestCase
     }
 
     /**
-     * @return array[]
+     * @return array<string, array{
+     *     puzzle: array<int, array<int, int>>,
+     *     expectation: array<int, array<int, int>>
+     * }>
      * @todo Provide more test cases
      */
     public static function provideSolvablePuzzles(): array

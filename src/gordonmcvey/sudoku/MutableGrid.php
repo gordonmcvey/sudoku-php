@@ -44,4 +44,10 @@ class MutableGrid extends Grid implements MutableGridContract, JsonSerializable
 
         return $this;
     }
+
+    public function clearCoordinates(RowIds $row, ColumnIds $column): self
+    {
+        unset($this->gridState[$row->value][$column->value]);
+        return $this;
+    }
 }
