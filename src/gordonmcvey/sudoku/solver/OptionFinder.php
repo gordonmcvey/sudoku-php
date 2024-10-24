@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\solver;
 
+use gordonmcvey\sudoku\dto\CellOptions;
 use gordonmcvey\sudoku\enum\ColumnIds;
 use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\enum\SubGridIds;
@@ -29,7 +30,7 @@ readonly class OptionFinder
      * The returned array only contains options for the unfilled cells.  If a cell is filled then it by definition has
      * no optional values to fill for that cell.
      *
-     * @return array<int, array<int, array<int>>> Options for each cell, keyed by row and column
+     * @return array<int, array<int, CellOptions>> Options for each cell, keyed by row and column
      */
     public function findOptionsFor(GridContract $grid): array
     {
@@ -62,7 +63,8 @@ readonly class OptionFinder
                         $subGridCache[SubGridMapper::coordinatesToSubGridId($rowId, $columnId)->value],
                     )) :
                     [];
-                empty($options) || $gridOptions[$rowId->value][$columnId->value] = $options;
+                empty($options)
+                    || $gridOptions[$rowId->value][$columnId->value] = new CellOptions($rowId, $columnId, $options);
             }
         }
 
@@ -72,33 +74,37 @@ readonly class OptionFinder
     /**
      * Find all the options that could be valid for the specified cell in the given grid
      *
-     * @return array<int> List of possible options. Empty if the cell is filled or if there are no valid options
+     * @return CellOptions List of possible options. Empty if the cell is filled or if there are no valid options
      */
-    public function findOptionsForCell(GridContract $grid, RowIds $rowId, ColumnIds $columnId): array
+    public function findOptionsForCell(GridContract $grid, RowIds $rowId, ColumnIds $columnId): CellOptions
     {
-        return null === $grid->cellAtCoordinates($rowId, $columnId) ?
+        return new CellOptions(
+            $rowId,
+            $columnId,
+            null === $grid->cellAtCoordinates($rowId, $columnId) ?
             array_values(array_diff(
                 self::ALL_OPTIONS,
                 $grid->row($rowId),
                 $grid->column($columnId),
                 $grid->subGridAtCoordinates($rowId, $columnId),
             )) :
-            [];
+            []
+        );
     }
 
     /**
-     * @return array<int, array<int, array<int>>>
+     * @return array<int, array<int, CellOptions>>
      */
     private function emptyGridOptions(): array
     {
-        return array_fill(
-            0,
-            GridContract::TOTAL_ROWS,
-            array_fill(
-                0,
-                GridContract::TOTAL_COLUMNS,
-                self::ALL_OPTIONS
-            )
-        );
+        $gridOptoons = [];
+
+        foreach (RowIds::cases() as $rowId) {
+            foreach (ColumnIds::cases() as $columnId) {
+                $gridOptions[$rowId->value][$columnId->value] = new CellOptions($rowId, $columnId, self::ALL_OPTIONS);
+            }
+        }
+
+        return $gridOptions;
     }
 }

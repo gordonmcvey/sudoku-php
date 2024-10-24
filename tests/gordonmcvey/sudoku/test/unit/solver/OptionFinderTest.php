@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace gordonmcvey\sudoku\test\unit\solver;
 
+use gordonmcvey\sudoku\dto\CellOptions;
+use gordonmcvey\sudoku\enum\ColumnIds;
+use gordonmcvey\sudoku\enum\RowIds;
 use gordonmcvey\sudoku\interface\GridContract;
 use gordonmcvey\sudoku\solver\OptionFinder;
 use gordonmcvey\sudoku\test\support\GridMocker;
@@ -24,11 +27,18 @@ class OptionFinderTest extends TestCase
     #[DataProvider("provideGrids")]
     public function findOptionsFor(array $gridState, array $expectation): void
     {
+        $expectedOutput = [];
+        foreach($expectation as $rowId => $columns) {
+            foreach($columns as $columnId => $options) {
+                $expectedOutput[$rowId][$columnId] = new CellOptions(RowIds::from($rowId), ColumnIds::from($columnId), $options);
+            }
+        }
+
         $grid = GridMocker::configure($this->createMock(GridContract::class), $gridState);
         $finder = new OptionFinder();
-        $options = $finder->findOptionsFor($grid);
+        $gridOptions = $finder->findOptionsFor($grid);
 
-        $this->assertSame($expectation, $options);
+        $this->assertEquals($expectedOutput, $gridOptions);
     }
 
     /**
@@ -227,10 +237,13 @@ class OptionFinderTest extends TestCase
         $options = $finder->findOptionsFor($grid);
 
         $this->assertCount(9, $options);
-        foreach ($options as $row) {
+        foreach ($options as $rowId => $row) {
             $this->assertCount(9, $row);
-            foreach ($row as $option) {
-                $this->assertSame([1, 2, 3, 4, 5, 6, 7, 8, 9], $option);
+            foreach ($row as $columnId => $option) {
+                $this->assertEquals
+                    (new CellOptions(RowIds::from($rowId), ColumnIds::from($columnId), [1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                    $option,
+                );
             }
         }
     }

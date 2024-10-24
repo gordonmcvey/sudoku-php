@@ -24,6 +24,7 @@ use gordonmcvey\sudoku\interface\MutableGridContract;
  * overcome or mitigate the limitations of this approach.
  *
  * @link https://www.youtube.com/watch?v=eAFcj_2quWI The implementation is loosely based on the one demonstrated here
+ * @link https://www.101computing.net/backtracking-algorithm-sudoku-solver/ This was also used as a source
  */
 readonly class DepthFirstSolver
 {
@@ -56,7 +57,7 @@ readonly class DepthFirstSolver
             return $this->findSolution($rowKey, $columnKey + 1);
         } else {
             // Find a valid solution for this cell
-            foreach ($this->finder->findOptionsForCell($this->grid, $rowId, $columnId) as $option) {
+            foreach ($this->finder->findOptionsForCell($this->grid, $rowId, $columnId)->options as $option) {
                 // Try each possible value in this cell then attempt to solve the rest of the puzzle
                 $this->grid->fillCoordinates($rowId, $columnId, $option);
                 if ($this->findSolution($rowKey, $columnKey + 1)) {
